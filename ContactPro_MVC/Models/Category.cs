@@ -14,8 +14,8 @@ namespace ContactPro_MVC.Models
         public string? Name { get; set; }
 
         //Virtuals
-        public virtual AppUser? AppUser { get; set; }
-        public virtual ICollection<Contact> Contacts { get; set; } = new HashSet<Contact>();
+        public virtual AppUser? AppUser { get; set; } // FK to AspNetUsers
+        public virtual ICollection<Contact> Contacts { get; set; } = new HashSet<Contact>(); // For CategoryContact join table
 
     }
 }

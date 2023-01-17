@@ -65,7 +65,7 @@ namespace ContactPro_MVC.Models
 
         //virtuals (Keys)
 
-        public virtual AppUser? AppUser { get; set; }
-        public virtual ICollection<Category> Categories { get; set; } = new HashSet<Category>();
+        public virtual AppUser? AppUser { get; set; } //FK to AspNetUsers
+        public virtual ICollection<Category> Categories { get; set; } = new HashSet<Category>(); //
     }
 }

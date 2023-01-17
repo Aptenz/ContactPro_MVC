@@ -1,6 +1,6 @@
 ﻿namespace ContactPro_MVC.Enums
 {
-    public enum States
+    public enum States // enum for drop down of states in categories
     {
         AL,
         AK,
