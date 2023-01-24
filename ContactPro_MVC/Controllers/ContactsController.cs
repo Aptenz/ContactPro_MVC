@@ -9,16 +9,22 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
 using ContactPro_MVC.Data;
 using ContactPro_MVC.Models;
+using ContactPro_MVC.Enums;
+using ContactPro_MVC.Services.Interfaces;
+using ContactPro_MVC.Services;
 
 namespace ContactPro_MVC.Controllers
 {
     public class ContactsController : Controller
     {
         private readonly ApplicationDbContext _context;
-
-        public ContactsController(ApplicationDbContext context)
+        private readonly UserManager<AppUser> _userManager;
+        private readonly IImageService _imageService;
+        public ContactsController(ApplicationDbContext context, UserManager<AppUser> userManager, IImageService imageService)
         {
             _context = context;
+            _userManager = userManager;
+            _imageService = imageService;
         }
 
         // GET: Contacts
@@ -54,6 +60,7 @@ namespace ContactPro_MVC.Controllers
         public IActionResult Create()
         {
             ViewData["AppUserID"] = new SelectList(_context.Users, "Id", "Id");
+            ViewData["StatesList"] = new SelectList(Enum.GetValues(typeof(States)).Cast<States>().ToList());
             return View();
         }
 
@@ -62,16 +69,30 @@ namespace ContactPro_MVC.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,AppUserID,FirstName,LastName,BirthDate,Address1,Address2,City,State,ZipCode,Email,PhoneNumber,Created,ImageData,ImageType")] Contact contact)
+        public async Task<IActionResult> Create([Bind("Id,FirstName,LastName,BirthDate,Address1,Address2,City,State,ZipCode,Email,PhoneNumber,ImageFile")] Contact contact) // what is passed to user
         {
+            ModelState.Remove("AppUserID"); // don't want user to modify their userid
+
             if (ModelState.IsValid)
             {
+                contact.AppUserID = _userManager.GetUserId(User);
+                contact.Created = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
+
+                if (contact.BirthDate != null)
+                {
+                    contact.BirthDate = DateTime.SpecifyKind(contact.BirthDate.Value, DateTimeKind.Utc);
+                }
+
+                if(contact.ImageFile != null)
+                {
+                    contact.ImageData = await _imageService.CovertFileToByteArrayAsync(contact.ImageFile);
+                    contact.ImageType = contact.ImageFile.ContentType;
+                }
                 _context.Add(contact);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["AppUserID"] = new SelectList(_context.Users, "Id", "Id", contact.AppUserID);
-            return View(contact);
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: Contacts/Edit/5
