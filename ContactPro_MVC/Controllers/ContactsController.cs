@@ -31,11 +31,66 @@ namespace ContactPro_MVC.Controllers
 
         // GET: Contacts
         [Authorize]
-        public async Task<IActionResult> Index()
+        public IActionResult Index(int categoryId)
         {
-            var applicationDbContext = _context.Contacts.Include(c => c.AppUser);
-            return View(await applicationDbContext.ToListAsync());
+
+            List<Contact> contacts = new List<Contact>();
+            string appUserId = _userManager.GetUserId(User);
+
+            //return userID and its associated contacts and associated categories;
+            AppUser appUser = _context.Users.Include(c => c.Contacts)
+                                            .ThenInclude(c => c.Categories)
+                                            .FirstOrDefault(u => u.Id == appUserId)!;
+
+            var categories = appUser.Categories;
+
+            if (categoryId == 0)
+            {
+                contacts = appUser.Contacts.OrderBy(c => c.LastName).ThenBy(c => c.FirstName).ToList();
+            } else
+            {
+                contacts = appUser.Categories.FirstOrDefault(c => c.Id == categoryId)!
+                                  .Contacts
+                                  .OrderBy(c => c.LastName)
+                                  .ThenBy(c => c.FirstName)
+                                  .ToList();
+            }
+
+            ViewData["CategoryId"] = new SelectList(categories, "Id", "Name");
+
+            return View(contacts);
         }
+
+        [Authorize]
+        public IActionResult SearchContacts(string searchString)
+        {
+            string appUserId = _userManager.GetUserId(User);
+            var contacts = new List<Contact>();
+
+            AppUser appUser = _context.Users
+                                      .Include(c => c.Contacts)
+                                      .ThenInclude(c => c.Categories)
+                                      .FirstOrDefault(u => u.Id == appUserId)!;
+
+            if(String.IsNullOrEmpty(searchString))
+            {
+                contacts = appUser.Contacts
+                                  .OrderBy(c => c.LastName)
+                                  .ThenBy(c => c.FirstName)
+                                  .ToList();
+            } else
+            {
+                contacts = appUser.Contacts.Where(c => c.FullName!.ToLower().Contains(searchString.ToLower()))
+                                  .OrderBy(c => c.LastName)
+                                  .ThenBy(c => c.FirstName)
+                                  .ToList();
+            }
+
+            ViewData["CategoryId"] = new SelectList(appUser.Categories, "Id", "Name",0);
+
+            return View(nameof(Index), contacts);
+        }
+
 
         // GET: Contacts/Details/5
         [Authorize]
