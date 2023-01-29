@@ -37,7 +37,7 @@ namespace ContactPro_MVC.Controllers
             List<Contact> contacts = new List<Contact>();
             string appUserId = _userManager.GetUserId(User);
 
-            //return userID and its associated contacts and associated categories;
+            //return userID and its associated contacts and associated categories
             AppUser appUser = _context.Users.Include(c => c.Contacts)
                                             .ThenInclude(c => c.Categories)
                                             .FirstOrDefault(u => u.Id == appUserId)!;
@@ -46,17 +46,18 @@ namespace ContactPro_MVC.Controllers
 
             if (categoryId == 0)
             {
-                contacts = appUser.Contacts.OrderBy(c => c.LastName).ThenBy(c => c.FirstName).ToList();
+                contacts = appUser.Contacts.OrderBy(c => c.LastName)
+                                           .ThenBy(c => c.FirstName)
+                                           .ToList();
             } else
             {
-                contacts = appUser.Categories.FirstOrDefault(c => c.Id == categoryId)!
-                                  .Contacts
-                                  .OrderBy(c => c.LastName)
-                                  .ThenBy(c => c.FirstName)
-                                  .ToList();
+                contacts = appUser.Categories.FirstOrDefault(c => c.Id == categoryId)
+                                  .Contacts.OrderBy(c => c.LastName)
+                                           .ThenBy(c => c.FirstName)
+                                           .ToList();
             }
 
-            ViewData["CategoryId"] = new SelectList(categories, "Id", "Name");
+            ViewData["CategoryId"] = new SelectList(categories, "Id", "Name", categoryId);
 
             return View(contacts);
         }
@@ -70,7 +71,7 @@ namespace ContactPro_MVC.Controllers
             AppUser appUser = _context.Users
                                       .Include(c => c.Contacts)
                                       .ThenInclude(c => c.Categories)
-                                      .FirstOrDefault(u => u.Id == appUserId)!;
+                                      .FirstOrDefault(u => u.Id == appUserId);
 
             if(String.IsNullOrEmpty(searchString))
             {
@@ -86,7 +87,7 @@ namespace ContactPro_MVC.Controllers
                                   .ToList();
             }
 
-            ViewData["CategoryId"] = new SelectList(appUser.Categories, "Id", "Name",0);
+            ViewData["CategoryId"] = new SelectList(appUser.Categories, "Id", "Name", 0);
 
             return View(nameof(Index), contacts);
         }
@@ -151,11 +152,11 @@ namespace ContactPro_MVC.Controllers
                 await _context.SaveChangesAsync();
 
                 //loop over all the selected categories
+                //save each category selected to the contactcategories table
                 foreach (int categoryId in CategoryList)
                 {
                     await _addressBookService.AddContactToCategoryAsync(categoryId, contact.Id);
                 }
-                //save each category selected to the contactcategories table
 
 
 

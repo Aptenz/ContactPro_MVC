@@ -20,7 +20,8 @@ namespace ContactPro_MVC.Models
         [NotMapped] // Won't be in the database, calculated at runtime
         public string? FullName { get { return $"{FirstName} {LastName}"; } }
 
-        public virtual ICollection<Contact> Contacts { get; set; } = new HashSet<Contact>();
         public virtual ICollection<Category> Categories { get; set; } = new HashSet<Category>();
+
+        public virtual ICollection<Contact> Contacts { get; set; } = new HashSet<Contact>();
     }
 }

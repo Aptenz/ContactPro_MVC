@@ -354,7 +354,7 @@ namespace ContactPro_MVC.Migrations
             modelBuilder.Entity("ContactPro_MVC.Models.Category", b =>
                 {
                     b.HasOne("ContactPro_MVC.Models.AppUser", "AppUser")
-                        .WithMany()
+                        .WithMany("Categories")
                         .HasForeignKey("AppUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -365,7 +365,7 @@ namespace ContactPro_MVC.Migrations
             modelBuilder.Entity("ContactPro_MVC.Models.Contact", b =>
                 {
                     b.HasOne("ContactPro_MVC.Models.AppUser", "AppUser")
-                        .WithMany()
+                        .WithMany("Contacts")
                         .HasForeignKey("AppUserID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -422,6 +422,13 @@ namespace ContactPro_MVC.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("ContactPro_MVC.Models.AppUser", b =>
+                {
+                    b.Navigation("Categories");
+
+                    b.Navigation("Contacts");
                 });
 #pragma warning restore 612, 618
         }
