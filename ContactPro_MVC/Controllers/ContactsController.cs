@@ -113,7 +113,7 @@ namespace ContactPro_MVC.Controllers
             return View(contact);
         }
 
-        // GET: Contacts/Create]
+        // GET: Contacts/Create
         [Authorize]
         public async Task<IActionResult> Create()
         {

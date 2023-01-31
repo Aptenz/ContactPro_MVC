@@ -2,28 +2,30 @@
 using ContactPro_MVC.Models;
 using ContactPro_MVC.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Npgsql.PostgresTypes;
 
 namespace ContactPro_MVC.Services
 {
+
     public class AddressBookService : IAddressBookService
     {
         private readonly ApplicationDbContext _context;
-
+        
         public AddressBookService(ApplicationDbContext context)
         {
             _context = context;
         }
+
         public async Task AddContactToCategoryAsync(int categoryId, int contactId)
         {
             try
             {
-                //check to see if category is in the contact
-                if(!await IsContactInCategory(categoryId, contactId))
+                //check to see if category is in contact already
+                if (!await IsContactInCategory(categoryId, contactId))
                 {
                     Contact? contact = await _context.Contacts.FindAsync(contactId);
-                    Category? category = await _context.Categories.FindAsync(contactId);
-                    if(category != null && contact != null)
+                    Category? category = await _context.Categories.FindAsync(categoryId);
+
+                    if(category != null && contact != null) // check to see if no bad data can be passed
                     {
                         category.Contacts.Add(contact);
                         await _context.SaveChangesAsync();
@@ -34,6 +36,11 @@ namespace ContactPro_MVC.Services
             {
                 throw;
             }
+        }
+
+        public Task<ICollection<Category>> GetContactCategoriesAsync(int contactId)
+        {
+            throw new NotImplementedException();
         }
 
         public Task<ICollection<int>> GetContactCategoryIdsAsync(int contactId)
@@ -47,7 +54,9 @@ namespace ContactPro_MVC.Services
 
             try
             {
-                categories = await _context.Categories.Where(c => c.AppUserId == userId).OrderBy(c => c.Name).ToListAsync();
+                categories = await _context.Categories.Where(c => c.AppUserId == userId)
+                                                      .OrderBy(c => c.Name)
+                                                      .ToListAsync();
             }
             catch
             {
@@ -60,10 +69,14 @@ namespace ContactPro_MVC.Services
         public async Task<bool> IsContactInCategory(int categoryId, int contactId)
         {
             Contact? contact = await _context.Contacts.FindAsync(contactId);
-            return await _context.Categories.Include(c => c.Contacts).Where(c => c.Id == categoryId && c.Contacts.Contains(contact)).AnyAsync();
+
+            return await _context.Categories
+                                 .Include(c => c.Contacts)
+                                 .Where(c => c.Id == categoryId && c.Contacts.Contains(contact))
+                                 .AnyAsync(); //returns true false statement
         }
 
-        public Task RemoveContactFromCategoryAsync(UnknownBackendType categoryId, int contactId)
+        public Task RemoveContactFromCategoryAsync(int categoryId, int contactId)
         {
             throw new NotImplementedException();
         }
