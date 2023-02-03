@@ -13,6 +13,7 @@ using ContactPro_MVC.Enums;
 using ContactPro_MVC.Services.Interfaces;
 using ContactPro_MVC.Services;
 using ContactPro_MVC.Models.ViewModels;
+using Microsoft.AspNetCore.Identity.UI.Services;
 
 namespace ContactPro_MVC.Controllers
 {
@@ -22,18 +23,27 @@ namespace ContactPro_MVC.Controllers
         private readonly UserManager<AppUser> _userManager;
         private readonly IImageService _imageService;
         private readonly IAddressBookService _addressBookService;
-        public ContactsController(ApplicationDbContext context, UserManager<AppUser> userManager, IImageService imageService, IAddressBookService addressBookService)
+        private readonly IEmailSender _emailService;
+
+
+        public ContactsController(ApplicationDbContext context, 
+                                  UserManager<AppUser> userManager,
+                                  IImageService imageService, 
+                                  IAddressBookService addressBookService, 
+                                  IEmailSender emailService)
         {
             _context = context;
             _userManager = userManager;
             _imageService = imageService;
             _addressBookService = addressBookService;
+            _emailService = emailService;
         }
 
         // GET: Contacts
         [Authorize]
-        public IActionResult Index(int categoryId)
+        public IActionResult Index(int categoryId, string swalMessage = null)
         {
+            ViewData["SwalMessage"] = swalMessage;
 
             var contacts = new List<Contact>();
             string appUserId = _userManager.GetUserId(User);
@@ -121,6 +131,27 @@ namespace ContactPro_MVC.Controllers
 
             return View(model);
         }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> EmailContact(EmailContactViewModel ecvm)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    await _emailService.SendEmailAsync(ecvm.EmailData.EmailAddress, ecvm.EmailData.Subject, ecvm.EmailData.Body);
+                    return RedirectToAction("Index", "Contacts" , new { swalMessage = "Success: Email Sent!"});
+                }
+                catch
+                {
+                    return RedirectToAction("Index", "Contacts", new { swalMessage = "Error: Email Send Failed!" });
+                    throw;
+                }
+            }
+            return View(ecvm);
+        }
+
 
         // GET: Contacts/Details/5
         [Authorize]
