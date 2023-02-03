@@ -9,24 +9,35 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
 using ContactPro_MVC.Data;
 using ContactPro_MVC.Models;
+using ContactPro_MVC.Models.ViewModels;
 
 namespace ContactPro_MVC.Controllers
 {
     public class CategoriesController : Controller
     {
         private readonly ApplicationDbContext _context;
-
-        public CategoriesController(ApplicationDbContext context)
+        private readonly UserManager<AppUser> _userManager;
+        public CategoriesController(ApplicationDbContext context,
+                                    UserManager<AppUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: Categories
         [Authorize]
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Categories.Include(c => c.AppUser);
-            return View(await applicationDbContext.ToListAsync());
+            string appUserId = _userManager.GetUserId(User);
+
+
+            var categories = await _context.Categories
+                                     .Where(c => c.AppUserId == appUserId)
+                                     .Include(c => c.AppUser)
+                                     .ToListAsync();
+
+
+            return View(categories);
         }
 
         // GET: Categories/Details/5
