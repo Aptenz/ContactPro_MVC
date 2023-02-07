@@ -23,7 +23,7 @@ namespace ContactPro_MVC.Controllers
             return View();
         }
 
-        [Route("/Home/HandleError/{code:int")]
+        [Route("/Home/HandleError/{code:int}")]
         public IActionResult HandleError(int code)
         {
             var customError = new CustomError();
@@ -32,10 +32,10 @@ namespace ContactPro_MVC.Controllers
 
             if (code == 404)
             {
-                customError.message = "The page that you are looking for might have been removed, had its name changed, or is temporarily unavailable.";
+                customError.message = "The page that you are looking for might have been removed, had its name changed, or is temporarily unavailable";
             } else
             {
-                customError.message = "Sorry, something went wrong.";
+                customError.message = "Sorry, something went wrong";
             }
             return View("~/Views/Shared/CustomError.cshtml",customError);
         }
