@@ -19,7 +19,7 @@ namespace ContactPro_MVC.Services
         public async Task SendEmailAsync(string email, string subject, string htmlMessage)
         {
             // inject mail settings
-            var emailSender = _mailSettings.Email;
+            var emailSender = _mailSettings.Email ?? Environment.GetEnvironmentVariable("Email");
             // handles all formating of emails
             MimeMessage newEmail = new();
             // ensures that it is in correct format for mimemessage
@@ -42,9 +42,10 @@ namespace ContactPro_MVC.Services
 
             try
             {
-                var host = _mailSettings.Host;
-                var port = _mailSettings.Port;
-                var password = _mailSettings.Password;
+                var host = _mailSettings.Host ?? Environment.GetEnvironmentVariable("Host");
+                // if mail settings is not 0 look locally else look at the environment
+                var port = _mailSettings.Port != 0 ? _mailSettings.Port : int.Parse(Environment.GetEnvironmentVariable("Port")!);
+                var password = _mailSettings.Password ?? Environment.GetEnvironmentVariable("Password");
                 // connects to smtp client
                 await smtpClient.ConnectAsync(host, port, SecureSocketOptions.StartTls);
                 await smtpClient.AuthenticateAsync(emailSender, password);

@@ -5,13 +5,16 @@ using Microsoft.EntityFrameworkCore;
 using ContactPro_MVC.Services;
 using ContactPro_MVC.Services.Interfaces;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using ContactPro_MVC.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // var connectionString = builder.Configuration.GetConnectionString("DefaultConnection"); // Tells how to connect to the database
 
-var connectionString = builder.Configuration.GetSection("pgSettings")["pgConnection"];
+//var connectionString = builder.Configuration.GetSection("pgSettings")["pgConnection"];
+var connectionString = ConnectionHelper.GetConnectionString(builder.Configuration);
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString)); // configures database driver
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
@@ -28,6 +31,9 @@ builder.Services.AddScoped<IEmailSender, EmailService>();
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
 
 var app = builder.Build();
+var scope = app.Services.CreateScope();
+//keep database update with the latest migrations
+await DataHelper.ManageDataAsync(scope.ServiceProvider);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
