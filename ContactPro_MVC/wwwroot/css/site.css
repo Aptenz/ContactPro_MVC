@@ -156,6 +156,14 @@ main {
     font-size: 3.5rem;
 }
 
+.railwayicon {
+    background-image: url('/img/logo-dark.svg');
+    height: 3.5rem;
+    width: auto;
+    display: inline-block;
+    vertical-align: top;
+}
+
 .footer {
     flex-shrink: 0;
     background-color: var(--cf-secondaryColor);
